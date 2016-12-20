@@ -42,7 +42,7 @@ namespace TwitchTools
             {
                 //Let's assume that the first argument is the channel name
                 //We really need the _Id for the channel as this is required per v5
-                TwitchChannelJson myChannel = myApi.TwitchChannelsApi(args[0].ToLower(), true);
+                TwitchChannelJson myChannel = myApi.TwitchChannelsQueryApi(args[0].ToLower());
 
                 //We should have a channel or list of channels
                 if (myChannel.channels.Count == 1)
@@ -93,27 +93,15 @@ namespace TwitchTools
             {
                 case "channels":
 
-                    TwitchChannelJson myChannel = myApi.TwitchChannelsApi(twitchId, false);
+                    TwitchChannel myChannel = myApi.TwitchChannelsApi(twitchId);
                     //We have a List
 
-                    if (myChannel.channels.Count == 1)
+                    if (myChannel != null)
                     {
                         //We only got one response in our list
                         //Console.WriteLine("Current game is {0}", myChannel.channels.ElementAt(0).game);
-                        myUtils.DebugLog(string.Format("Current game is {0}", myChannel.channels.ElementAt(0).game));
-                        myUtils.WriteFile(myChannel.channels.ElementAt(0).game, "Game.txt");
-                    }
-                    else
-                    {
-                        //We got more than one reponse in the list so need to parse it further
-                        //TODO parse the list further to ensure only one value returned.
-                        foreach (TwitchChannel channel in myChannel.channels)
-                        {
-
-                            //Console.WriteLine("Current game is {0}", channel.game);
-                            myUtils.DebugLog(string.Format("Current game is {0}", channel.game));
-
-                        }
+                        myUtils.DebugLog(string.Format("Current game is {0}", myChannel.game));
+                        myUtils.WriteFile(myChannel.game, "Game.txt");
                     }
                     break;
             }

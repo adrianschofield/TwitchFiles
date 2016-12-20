@@ -104,6 +104,10 @@ namespace TwitchTools
                         myUtils.WriteFile(myChannel.game, "Game.txt");
                     }
                     break;
+                case "channelsquery":
+
+                    TwitchChannelJson myTwitchChannelJson = myApi.TwitchChannelsQueryApi(twitchId);
+                    break;
             }
 
             return;

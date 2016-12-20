@@ -1,4 +1,8 @@
-﻿TwitchFiles
+﻿#TwitchFiles
+
+TwitchFiles is a desktop application for Windows which gathers data from Twitch and writes it to file so that you can add it to your OBS or XSplit scene.
+
+
 
 Unzip all the files from http://unshapedadrian.co.uk/downloads/TwitchFiles.zip and place them in a local folder.
 

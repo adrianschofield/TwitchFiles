@@ -21,9 +21,14 @@ namespace TwitchTools
 
         //public static Config myConfig = new Config();
 
+        //This is the global to hold the channel Id translated from the channel name at startup
+
         public static string twitchId = null;
 
-        
+        //DoWork with arguments is called from the app.xaml
+        //DoWork with no arguments is called from NotifyIconViewModel.cs
+        //Overloaded for ease of use and lazy coding
+
         public static void DoWork(string[] args)
         {
             const int pollingInterval = 5 * 60 * 1000;
@@ -70,7 +75,8 @@ namespace TwitchTools
 
             do
             {
-                CallTwitchApi("channels");
+                //Make a call to overloaded DoWork to avoid code duplication
+                DoWork();
                 System.Threading.Thread.Sleep(pollingInterval);
             } while (continuePolling);
 
@@ -78,17 +84,24 @@ namespace TwitchTools
         }
 
 
+        //Lazy coding DoWork makes all the necessary Twitch API calls.
         public static void DoWork()
         {
             CallTwitchApi("channels");
+            CallTwitchApi("channelcommunity");
+            CallTwitchApi("channelfollows");
             return;
         }
+
+
+        //Wrapper to make the relevant Twitch API calls
 
         public static void CallTwitchApi(string ApiName)
         {
             TwitchApi myApi = new TwitchApi();
             Utilities myUtils = new Utilities();
 
+            //Using a switch to pick out the relevant API calls
             switch (ApiName)
             {
                 case "channels":
@@ -102,11 +115,28 @@ namespace TwitchTools
                         //Console.WriteLine("Current game is {0}", myChannel.channels.ElementAt(0).game);
                         myUtils.DebugLog(string.Format("Current game is {0}", myChannel.game));
                         myUtils.WriteFile(myChannel.game, "Game.txt");
+                        myUtils.WriteFile(myChannel.followers.ToString(), "NumberofFollowers.txt");
+                        myUtils.WriteFile(myChannel.status, "Status.txt");
                     }
                     break;
                 case "channelsquery":
 
                     TwitchChannelJson myTwitchChannelJson = myApi.TwitchChannelsQueryApi(twitchId);
+                    break;
+                case "channelcommunity":
+                    TwitchCommunity myTwitchCommunity = myApi.TwitchChannelCommunityApi(twitchId);
+                    myUtils.WriteFile(myTwitchCommunity.name, "Community.txt");
+                    break;
+                case "channelfollows":
+                    TwitchFollowsJson myTwitchFollowsJson = myApi.TwitchChannelFollows(twitchId);
+                    string myFollowers = null;
+                    foreach (TwitchFollow follow in myTwitchFollowsJson.follows)
+                    {
+                        myFollowers += follow.user.display_name + ", ";                 
+                    }
+                    myUtils.WriteFile(myFollowers, "Followers.txt");
+                    break;
+                default:
                     break;
             }
 

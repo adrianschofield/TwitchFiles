@@ -28,15 +28,10 @@ namespace TwitchTools
             
             //Build an HttpRequest for the relevant Twitch endpoint
             HttpWebRequest myWebRequest = WebRequest.CreateHttp("https://api.twitch.tv/kraken/search/channels?query=" + user);
-           
+
             //Add Headers and Accept to force v5
-            myWebRequest.Headers.Add("Client-ID", twitchClientId);
-            myWebRequest.Accept = twitchAcceptv5;
-
-            //Method and type
-            myWebRequest.Method = "GET";
-            myWebRequest.ContentType = "application/json";
-
+            myWebRequest = AddHeaders(myWebRequest);
+           
             //Create the Json object outside the using so we can access it later
             TwitchChannelJson myChannel = null;
 
@@ -73,15 +68,10 @@ namespace TwitchTools
             HttpWebRequest myWebRequest = null;
             
             myWebRequest = WebRequest.CreateHttp("https://api.twitch.tv/kraken/channels/" + user);
-            
+
 
             //Add Headers and Accept to force v5
-            myWebRequest.Headers.Add("Client-ID", twitchClientId);
-            myWebRequest.Accept = twitchAcceptv5;
-
-            //Method and type
-            myWebRequest.Method = "GET";
-            myWebRequest.ContentType = "application/json";
+            myWebRequest = AddHeaders(myWebRequest);
 
             //Create the Json object outside the using so we can access it later
             TwitchChannel myChannel = null;
@@ -114,6 +104,104 @@ namespace TwitchTools
             }
 
             return myChannel;
+        }
+
+        public TwitchCommunity TwitchChannelCommunityApi(string user)
+        {
+            HttpWebRequest myWebRequest = null;
+
+            myWebRequest = WebRequest.CreateHttp("https://api.twitch.tv/kraken/channels/" + user + "/community");
+
+            //Add Headers and Accept to force v5
+            myWebRequest = AddHeaders(myWebRequest);
+
+            //Create the Json object outside the using so we can access it later
+            TwitchCommunity myCommunity = null;
+
+            //Make the http request and handle the response
+            using (System.IO.Stream s = myWebRequest.GetResponse().GetResponseStream())
+            {
+                using (System.IO.StreamReader sr = new System.IO.StreamReader(s))
+                {
+                    var jsonResponse = sr.ReadToEnd();
+                    //Console.WriteLine(String.Format("Response: {0}", jsonResponse));
+                    myTwitchUtils.DebugLog(String.Format("Response: {0}", jsonResponse));
+
+                    //Deserialize the response using Newtonsoft and manage exceptions
+                    try
+                    {
+                        //myChannel = new TwitchChannelJson();
+                        //myChannel.channels = new List<TwitchChannel>();
+                        //myChannel.channels.Add(JsonConvert.DeserializeObject<TwitchChannel>(jsonResponse));
+
+                        myCommunity = JsonConvert.DeserializeObject<TwitchCommunity>(jsonResponse);
+
+                    }
+                    catch (Exception ex)
+                    {
+                        //Console.WriteLine("Failed deserialzing with {0}", ex.Message);
+                        myTwitchUtils.DebugLog(string.Format("Failed deserialzing with {0}", ex.Message));
+                    }
+                }
+            }
+
+            return myCommunity;
+        }
+
+        public TwitchFollowsJson TwitchChannelFollows(string id)
+        {
+            HttpWebRequest myWebRequest = null;
+
+            myWebRequest = WebRequest.CreateHttp("https://api.twitch.tv/kraken/channels/" + id + "/follows?limit=100");
+
+            //Add Headers and Accept to force v5
+            myWebRequest = AddHeaders(myWebRequest);
+
+            //Create the Json object outside the using so we can access it later
+            TwitchFollowsJson myFollows = null;
+
+            //Make the http request and handle the response
+            using (System.IO.Stream s = myWebRequest.GetResponse().GetResponseStream())
+            {
+                using (System.IO.StreamReader sr = new System.IO.StreamReader(s))
+                {
+                    var jsonResponse = sr.ReadToEnd();
+                    //Console.WriteLine(String.Format("Response: {0}", jsonResponse));
+                    myTwitchUtils.DebugLog(String.Format("Response: {0}", jsonResponse));
+
+                    //Deserialize the response using Newtonsoft and manage exceptions
+                    try
+                    {
+                        //myChannel = new TwitchChannelJson();
+                        //myChannel.channels = new List<TwitchChannel>();
+                        //myChannel.channels.Add(JsonConvert.DeserializeObject<TwitchChannel>(jsonResponse));
+
+                        myFollows = JsonConvert.DeserializeObject<TwitchFollowsJson>(jsonResponse);
+
+                    }
+                    catch (Exception ex)
+                    {
+                        //Console.WriteLine("Failed deserialzing with {0}", ex.Message);
+                        myTwitchUtils.DebugLog(string.Format("Failed deserialzing with {0}", ex.Message));
+                    }
+                }
+            }
+
+            return myFollows;
+        }
+
+        //Add Headers and Accept, Method and Type to every HttpWebRequest
+        private HttpWebRequest AddHeaders(HttpWebRequest myWebRequest)
+        {
+            //Add Headers and Accept to force v5
+            myWebRequest.Headers.Add("Client-ID", twitchClientId);
+            myWebRequest.Accept = twitchAcceptv5;
+
+            //Method and type
+            myWebRequest.Method = "GET";
+            myWebRequest.ContentType = "application/json";
+
+            return myWebRequest;
         }
     }
 }
